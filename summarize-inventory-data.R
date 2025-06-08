@@ -6,6 +6,7 @@ library(tidyverse)
 library(readxl)
 library(sf)
 library(elevatr)
+library(patchwork)
 
 source("constants.R")
 
@@ -327,21 +328,21 @@ print(p)
 dev.off()
 
 # TPA, with bars by species group (stacked), with elev_class as facets, using trees_sp_size
-p = ggplot(trees_sp_elev, aes(x = elev_class, y = tpa_live_gt10cm, fill = species_group)) +
+p1 = ggplot(trees_sp_elev, aes(x = elev_class, y = tpa_live_gt10cm, fill = species_group)) +
   geom_bar(stat = "identity", position = "stack") +
   scale_fill_viridis_d(option = "D", begin = 0, end = 1, direction = -1) +
-  labs(title = "Live tree density (trees > 4\" DBH)",
+  labs(title = "Live tree density", # \n(trees > 4\" DBH)
        x = "",
        y = "TPA") +
   theme_bw()
   
-png("~/Documents/temp/nyfp-figs/elev_tpa_comp.png", width = 600, height = 600, res = 150)
-print(p)
-dev.off()
+# png("~/Documents/temp/nyfp-figs/elev_tpa_comp.png", width = 600, height = 600, res = 150)
+# print(p1)
+# dev.off()
 
 
 # BA, with bars by species group (stacked), with elev_class as facets, using trees_sp_elev
-p = ggplot(trees_sp_elev, aes(x = elev_class, y = ba_live_ft, fill = species_group)) + 
+p2 = ggplot(trees_sp_elev, aes(x = elev_class, y = ba_live_ft, fill = species_group)) + 
   geom_bar(stat = "identity", position = "stack") +
   scale_fill_viridis_d(option = "D", begin = 0, end = 1, direction = -1) +
   labs(title = "Live basal area",
@@ -349,12 +350,17 @@ p = ggplot(trees_sp_elev, aes(x = elev_class, y = ba_live_ft, fill = species_gro
        y = "BA (sq ft/acre)") +
   theme_bw()
   
-png("~/Documents/temp/nyfp-figs/elev_ba_comp.png", width = 600, height = 600, res = 150)
-print(p)
+# png("~/Documents/temp/nyfp-figs/elev_ba_comp.png", width = 600, height = 600, res = 150)
+# print(p2)
+# dev.off()
+
+png("~/Documents/temp/nyfp-figs/elev_tph+ba_comp.png", width = 1000, height = 600, res = 150)
+(p1 | p2) + plot_layout(guides = "collect")
 dev.off()
 
+
 # BA as violin plot, with boxplot overlay (no whiskers), by elev_class (not species)
-p = ggplot(trees_plt, aes(x = elev_class, y = ba_live_ft)) + 
+p1 = ggplot(trees_plt, aes(x = elev_class, y = ba_live_ft)) + 
   geom_violin(fill = "lightblue", alpha = 0.5) +
   geom_boxplot(width = 0.1, outliers = FALSE, fill = "white", color = "black", coef = 0) +
   labs(title = "Live basal area",
@@ -362,13 +368,13 @@ p = ggplot(trees_plt, aes(x = elev_class, y = ba_live_ft)) +
        y = "BA (sq ft/acre)") +
   theme_bw() +
   scale_x_discrete(limits = c("Low elev", "High elev"))
-  
-png("~/Documents/temp/nyfp-figs/elev_ba_live_violin.png", width = 600, height = 600, res = 150)
-print(p)
-dev.off()
+
+# png("~/Documents/temp/nyfp-figs/elev_ba_live_violin.png", width = 600, height = 600, res = 150)
+# print(p1)
+# dev.off()
 
 # TPA as violin plot, with boxplot overlay (no whiskers), by elev_class (not species)
-p = ggplot(trees_plt, aes(x = elev_class, y = tpa_live_gt10cm)) + 
+p2 = ggplot(trees_plt, aes(x = elev_class, y = tpa_live_gt10cm)) + 
   geom_violin(fill = "lightblue", alpha = 0.5) +
   geom_boxplot(width = 0.1, outliers = FALSE, fill = "white", color = "black", coef = 0) +
   labs(title = "Live tree density (trees > 4\" DBH)",
@@ -376,15 +382,15 @@ p = ggplot(trees_plt, aes(x = elev_class, y = tpa_live_gt10cm)) +
        y = "Trees per acre") +
   theme_bw() +
   scale_x_discrete(limits = c("Low elev", "High elev"))
-  
-png("~/Documents/temp/nyfp-figs/elev_tpa_live_violin.png", width = 600, height = 600, res = 150)
-print(p)
-dev.off()
+
+# png("~/Documents/temp/nyfp-figs/elev_tpa_live_violin.png", width = 600, height = 600, res = 150)
+# print(p2)
+# dev.off()
 
 
 # Repeat for snags
 # BA as violin plot, with boxplot overlay (no whiskers), by elev_class (not species)
-p = ggplot(trees_plt, aes(x = elev_class, y = ba_dead_ft)) + 
+p3 = ggplot(trees_plt, aes(x = elev_class, y = ba_dead_ft)) + 
   geom_violin(fill = "lightblue", alpha = 0.5) +
   geom_boxplot(width = 0.1, outliers = FALSE, fill = "white", color = "black", coef = 0) +
   labs(title = "Snag basal area",
@@ -392,14 +398,14 @@ p = ggplot(trees_plt, aes(x = elev_class, y = ba_dead_ft)) +
        y = "Snag BA (sq ft/acre)") +
   theme_bw() +
   scale_x_discrete(limits = c("Low elev", "High elev"))
-  
-png("~/Documents/temp/nyfp-figs/elev_ba_dead_violin.png", width = 600, height = 600, res = 150)
-print(p)
-dev.off()
+
+# png("~/Documents/temp/nyfp-figs/elev_ba_dead_violin.png", width = 600, height = 600, res = 150)
+# print(p3)
+# dev.off()
 
 
 # TPA as violin plot, with boxplot overlay (no whiskers), by elev_class (not species)
-p = ggplot(trees_plt, aes(x = elev_class, y = tpa_dead_gt10cm)) + 
+p4 = ggplot(trees_plt, aes(x = elev_class, y = tpa_dead_gt10cm)) + 
   geom_violin(fill = "lightblue", alpha = 0.5) +
   geom_boxplot(width = 0.1, outliers = FALSE, fill = "white", color = "black", coef = 0) +
   labs(title = "Snag density (snags > 4\" DBH)",
@@ -407,12 +413,37 @@ p = ggplot(trees_plt, aes(x = elev_class, y = tpa_dead_gt10cm)) +
        y = "Snags per acre") +
   theme_bw() +
   scale_x_discrete(limits = c("Low elev", "High elev"))
-  
-png("~/Documents/temp/nyfp-figs/elev_tpa_dead_violin.png", width = 600, height = 600, res = 150)
-print(p)
+
+# png("~/Documents/temp/nyfp-figs/elev_tpa_dead_violin.png", width = 600, height = 600, res = 150)
+# print(p4)
+# dev.off()
+
+
+## Plot-level fuels
+
+# Make the fuels df long-form
+d_fig = fuels_mass |>
+  select(plot_id, elev_class, trt_ctl, mass_fine) |> #, mass_cwd
+  pivot_longer(cols = starts_with("mass_"),
+               names_to = "fuel_class",
+               values_to = "mass_tons_ac")
+
+# Violoin with boxplot overlay (no whiskers), by fuel_class
+p5 = ggplot(d_fig, aes(x = elev_class, y = mass_tons_ac)) +
+  geom_violin(fill = "lightblue", alpha = 0.5) +
+  geom_boxplot(width = 0.1, outliers = FALSE, fill = "white", color = "black", coef = 0) +
+  labs(title = "Fine fuel mass",
+       x = "",
+       y = "Mass (tons/acre)") +
+  theme_bw()
+
+# png("~/Documents/temp/nyfp-figs/elev_fuels_violin.png", width = 600, height = 600, res = 150)
+# print(p5)
+# dev.off()
+
+png("~/Documents/temp/nyfp-figs/elev_tpa+ba+fuels_violin.png", width = 1200, height = 1800, res = 150)
+((p1 | p2) / (p3 | p4) / (p5 | plot_spacer()))
 dev.off()
-
-
 
 
 ## Plot-level CWHR
@@ -429,35 +460,10 @@ p = ggplot(d_fig, aes(x = as.factor(cwhr_size), y = cwhr_cover, color = cwhr_typ
        x = "CWHR size class",
        y = "CWHR cover class") +
   facet_wrap(~ elev_class)
-    
+
 png("~/Documents/temp/nyfp-figs/elev_cwhr.png", width = 1400, height = 600, res = 150)
 print(p)
 dev.off()
-
-
-## Plot-level fuels
-
-# Make the fuels df long-form
-d_fig = fuels_mass |>
-  select(plot_id, elev_class, trt_ctl, mass_fine) |> #, mass_cwd
-  pivot_longer(cols = starts_with("mass_"),
-               names_to = "fuel_class",
-               values_to = "mass_tons_ac")
-
-# Violoin with boxplot overlay (no whiskers), by fuel_class
-p = ggplot(d_fig, aes(x = elev_class, y = mass_tons_ac)) +
-  geom_violin(fill = "lightblue", alpha = 0.5) +
-  geom_boxplot(width = 0.1, outliers = FALSE, fill = "white", color = "black", coef = 0) +
-  labs(title = "Fine fuel mass",
-       x = "",
-       y = "Mass (tons/acre)") +
-  theme_bw()
-
-png("~/Documents/temp/nyfp-figs/elev_fuels_violin.png", width = 600, height = 600, res = 150)
-print(p)
-dev.off()
-
-
 
 
 
@@ -478,27 +484,28 @@ p = ggplot(trees_sp_size_trtctl, aes(x = size_class, y = tpa_live_gt10cm, fill =
   theme_bw() +
   facet_wrap(~ trt_ctl)
 p
-  
+
 png("~/Documents/temp/nyfp-figs/trtctl_size_class_comp.png", width = 1200, height = 600, res = 150)
 print(p)
 dev.off()
 
 # TPA, with bars by species group (stacked), with elev_class as facets, using trees_sp_size
-p = ggplot(trees_sp_trtctl, aes(x = trt_ctl, y = tpa_live_gt10cm, fill = species_group)) +
+p1 = ggplot(trees_sp_trtctl, aes(x = trt_ctl, y = tpa_live_gt10cm, fill = species_group)) +
   geom_bar(stat = "identity", position = "stack") +
   scale_fill_viridis_d(option = "D", begin = 0, end = 1, direction = -1) +
-  labs(title = "Live tree density (trees > 4\" DBH)",
+  labs(title = "Live tree density", # (trees > 4\" DBH)
        x = "",
        y = "TPA") +
   theme_bw()
   
-png("~/Documents/temp/nyfp-figs/trtctl_tpa_comp.png", width = 600, height = 600, res = 150)
-print(p)
-dev.off()
+# png("~/Documents/temp/nyfp-figs/trtctl_tpa_comp.png", width = 600, height = 600, res = 150)
+# print(p1)
+# dev.off()
+
 
 
 # BA, with bars by species group (stacked), with elev_class as facets, using trees_sp_elev
-p = ggplot(trees_sp_trtctl, aes(x = trt_ctl, y = ba_live_ft, fill = species_group)) + 
+p2 = ggplot(trees_sp_trtctl, aes(x = trt_ctl, y = ba_live_ft, fill = species_group)) + 
   geom_bar(stat = "identity", position = "stack") +
   scale_fill_viridis_d(option = "D", begin = 0, end = 1, direction = -1) +
   labs(title = "Live basal area",
@@ -506,12 +513,16 @@ p = ggplot(trees_sp_trtctl, aes(x = trt_ctl, y = ba_live_ft, fill = species_grou
        y = "BA (sq ft/acre)") +
   theme_bw()
   
-png("~/Documents/temp/nyfp-figs/trtctl_ba_comp.png", width = 600, height = 600, res = 150)
-print(p)
+# png("~/Documents/temp/nyfp-figs/trtctl_ba_comp.png", width = 600, height = 600, res = 150)
+# print(p2)
+# dev.off()
+
+png("~/Documents/temp/nyfp-figs/trtctl_tph+ba_comp.png", width = 1000, height = 600, res = 150)
+(p1 | p2) + plot_layout(guides = "collect")
 dev.off()
 
 # BA as violin plot, with boxplot overlay (no whiskers), by elev_class (not species)
-p = ggplot(trees_plt, aes(x = trt_ctl, y = ba_live_ft)) + 
+p1 = ggplot(trees_plt, aes(x = trt_ctl, y = ba_live_ft)) + 
   geom_violin(fill = "lightblue", alpha = 0.5) +
   geom_boxplot(width = 0.1, outliers = FALSE, fill = "white", color = "black", coef = 0) +
   labs(title = "Live basal area",
@@ -519,12 +530,12 @@ p = ggplot(trees_plt, aes(x = trt_ctl, y = ba_live_ft)) +
        y = "BA (sq ft/acre)") +
   theme_bw()
   
-png("~/Documents/temp/nyfp-figs/trtctl_ba_live_violin.png", width = 600, height = 600, res = 150)
-print(p)
-dev.off()
+# png("~/Documents/temp/nyfp-figs/trtctl_ba_live_violin.png", width = 600, height = 600, res = 150)
+# print(p1)
+# dev.off()
 
 # TPA as violin plot, with boxplot overlay (no whiskers), by elev_class (not species)
-p = ggplot(trees_plt, aes(x = trt_ctl, y = tpa_live_gt10cm)) + 
+p2 = ggplot(trees_plt, aes(x = trt_ctl, y = tpa_live_gt10cm)) + 
   geom_violin(fill = "lightblue", alpha = 0.5) +
   geom_boxplot(width = 0.1, outliers = FALSE, fill = "white", color = "black", coef = 0) +
   labs(title = "Live tree density (trees > 4\" DBH)",
@@ -532,14 +543,14 @@ p = ggplot(trees_plt, aes(x = trt_ctl, y = tpa_live_gt10cm)) +
        y = "Trees per acre") +
   theme_bw()
   
-png("~/Documents/temp/nyfp-figs/trtctl_tpa_live_violin.png", width = 600, height = 600, res = 150)
-print(p)
-dev.off()
+# png("~/Documents/temp/nyfp-figs/trtctl_tpa_live_violin.png", width = 600, height = 600, res = 150)
+# print(p2)
+# dev.off()
 
 
 # Repeat for snags
 # BA as violin plot, with boxplot overlay (no whiskers), by elev_class (not species)
-p = ggplot(trees_plt, aes(x = trt_ctl, y = ba_dead_ft)) + 
+p3 = ggplot(trees_plt, aes(x = trt_ctl, y = ba_dead_ft)) + 
   geom_violin(fill = "lightblue", alpha = 0.5) +
   geom_boxplot(width = 0.1, outliers = FALSE, fill = "white", color = "black", coef = 0) +
   labs(title = "Snag basal area",
@@ -547,13 +558,13 @@ p = ggplot(trees_plt, aes(x = trt_ctl, y = ba_dead_ft)) +
        y = "Snag BA (sq ft/acre)") +
   theme_bw()
   
-png("~/Documents/temp/nyfp-figs/trtctl_ba_dead_violin.png", width = 600, height = 600, res = 150)
-print(p)
-dev.off()
+# png("~/Documents/temp/nyfp-figs/trtctl_ba_dead_violin.png", width = 600, height = 600, res = 150)
+# print(p3)
+# dev.off()
 
 
 # TPA as violin plot, with boxplot overlay (no whiskers), by elev_class (not species)
-p = ggplot(trees_plt, aes(x = trt_ctl, y = tpa_dead_gt10cm)) + 
+p4 = ggplot(trees_plt, aes(x = trt_ctl, y = tpa_dead_gt10cm)) + 
   geom_violin(fill = "lightblue", alpha = 0.5) +
   geom_boxplot(width = 0.1, outliers = FALSE, fill = "white", color = "black", coef = 0) +
   labs(title = "Snag density (snags > 4\" DBH)",
@@ -561,12 +572,36 @@ p = ggplot(trees_plt, aes(x = trt_ctl, y = tpa_dead_gt10cm)) +
        y = "Snags per acre") +
   theme_bw()
 
-png("~/Documents/temp/nyfp-figs/trtctl_tpa_dead_violin.png", width = 600, height = 600, res = 150)
-print(p)
+# png("~/Documents/temp/nyfp-figs/trtctl_tpa_dead_violin.png", width = 600, height = 600, res = 150)
+# print(p4)
+# dev.off()
+
+
+## Plot-level fuels
+
+# Make the fuels df long-form
+d_fig = fuels_mass |>
+  select(plot_id, elev_class, trt_ctl, mass_fine) |> #, mass_cwd
+  pivot_longer(cols = starts_with("mass_"),
+               names_to = "fuel_class",
+               values_to = "mass_tons_ac")
+
+# Violoin with boxplot overlay (no whiskers), by fuel_class
+p5 = ggplot(d_fig, aes(x = trt_ctl, y = mass_tons_ac)) +
+  geom_violin(fill = "lightblue", alpha = 0.5) +
+  geom_boxplot(width = 0.1, outliers = FALSE, fill = "white", color = "black", coef = 0) +
+  labs(title = "Fine fuel mass",
+       x = "",
+       y = "Mass (tons/acre)") +
+  theme_bw()
+
+# png("~/Documents/temp/nyfp-figs/trtctl_fuels_violin.png", width = 600, height = 600, res = 150)
+# print(p5)
+# dev.off()
+
+png("~/Documents/temp/nyfp-figs/trtctl_tpa+ba+fuels_violin.png", width = 1200, height = 1800, res = 150)
+((p1 | p2) / (p3 | p4) / (p5 | plot_spacer()))
 dev.off()
-
-
-
 
 ## Plot-level CWHR
 d_fig = plots |>
@@ -585,28 +620,5 @@ p = ggplot(d_fig, aes(x = as.factor(cwhr_size), y = cwhr_cover, color = cwhr_typ
   facet_wrap(~ trt_ctl)
     
 png("~/Documents/temp/nyfp-figs/trtctl_cwhr.png", width = 1400, height = 600, res = 150)
-print(p)
-dev.off()
-
-
-## Plot-level fuels
-
-# Make the fuels df long-form
-d_fig = fuels_mass |>
-  select(plot_id, elev_class, trt_ctl, mass_fine) |> #, mass_cwd
-  pivot_longer(cols = starts_with("mass_"),
-               names_to = "fuel_class",
-               values_to = "mass_tons_ac")
-
-# Violoin with boxplot overlay (no whiskers), by fuel_class
-p = ggplot(d_fig, aes(x = trt_ctl, y = mass_tons_ac)) +
-  geom_violin(fill = "lightblue", alpha = 0.5) +
-  geom_boxplot(width = 0.1, outliers = FALSE, fill = "white", color = "black", coef = 0) +
-  labs(title = "Fine fuel mass",
-       x = "",
-       y = "Mass (tons/acre)") +
-  theme_bw()
-
-png("~/Documents/temp/nyfp-figs/trtctl_fuels_violin.png", width = 600, height = 600, res = 150)
 print(p)
 dev.off()
