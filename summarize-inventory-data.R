@@ -449,10 +449,11 @@ dev.off()
 ## Plot-level CWHR
 d_fig = plots |>
   filter(!is.na(cwhr_size) & !is.na(cwhr_cover) & !is.na(cwhr_type)) |>
-  filter(!(cwhr_cover %in% c("25-40 percent open", "24-40% open")))
+  filter(!(cwhr_cover %in% c("25-40 percent open", "24-40% open"))) |>
+  filter(cwhr_size %in% 0:6)
 
 p = ggplot(d_fig, aes(x = as.factor(cwhr_size), y = cwhr_cover, color = cwhr_type)) +
-  geom_jitter(width = .3, height =.2, size = 2) +
+  geom_jitter(width = .2, height =.2, size = 2) +
   theme_bw() +
   scale_color_brewer(palette = "Dark2") +
   #scale_color_viridis_d(option = "D", begin = 0, end = 1, direction = -1) +
@@ -461,7 +462,7 @@ p = ggplot(d_fig, aes(x = as.factor(cwhr_size), y = cwhr_cover, color = cwhr_typ
        y = "CWHR cover class") +
   facet_wrap(~ elev_class)
 
-png("~/Documents/temp/nyfp-figs/elev_cwhr.png", width = 1400, height = 600, res = 150)
+png("~/Documents/temp/nyfp-figs/elev_cwhr.png", width = 1200, height = 600, res = 150)
 print(p)
 dev.off()
 
@@ -607,10 +608,11 @@ dev.off()
 d_fig = plots |>
   rename(trt_ctl = Sample) |>
   filter(!is.na(cwhr_size) & !is.na(cwhr_cover) & !is.na(cwhr_type)) |>
-  filter(!(cwhr_cover %in% c("25-40 percent open", "24-40% open")))
+  filter(!(cwhr_cover %in% c("25-40 percent open", "24-40% open"))) |>
+  filter(cwhr_size %in% 0:6)
 
 p = ggplot(d_fig, aes(x = as.factor(cwhr_size), y = cwhr_cover, color = cwhr_type)) +
-  geom_jitter(width = .3, height =.2, size = 2) +
+  geom_jitter(width = .2, height =.2, size = 2) +
   theme_bw() +
   scale_color_brewer(palette = "Dark2") +
   #scale_color_viridis_d(option = "D", begin = 0, end = 1, direction = -1) +
@@ -619,6 +621,6 @@ p = ggplot(d_fig, aes(x = as.factor(cwhr_size), y = cwhr_cover, color = cwhr_typ
        y = "CWHR cover class") +
   facet_wrap(~ trt_ctl)
     
-png("~/Documents/temp/nyfp-figs/trtctl_cwhr.png", width = 1400, height = 600, res = 150)
+png("~/Documents/temp/nyfp-figs/trtctl_cwhr.png", width = 1200, height = 600, res = 150)
 print(p)
 dev.off()
