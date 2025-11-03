@@ -735,8 +735,16 @@ dev.off()
 
 ## FACETED BY 2024/2025 (for plots that were measured in both years and were untreated in 2024 but treated in 2025):
 
+# Calculate totals for labels
+trees_sp_size_y2024untrt_y2025trt_totals = trees_sp_size_y2024untrt_y2025trt |>
+  group_by(trt_project, year, size_class) |>
+  summarize(total_tpa = sum(tpa_live_gt10cm, na.rm = TRUE), .groups = "drop")
+
 p = ggplot(trees_sp_size_y2024untrt_y2025trt, aes(x = size_class, y = tpa_live_gt10cm, fill = species_group)) +
   geom_bar(stat = "identity", position = "stack") +
+  geom_text(data = trees_sp_size_y2024untrt_y2025trt_totals,
+            aes(x = size_class, y = total_tpa, label = round(total_tpa, 0), fill = NULL),
+            vjust = -0.5, size = 3) +
   scale_fill_viridis_d(option = "D", begin = 0, end = 1, direction = -1) +
   labs(title = "Live tree size distribution & species composition",
        x = "Size class (inches)",
@@ -749,9 +757,17 @@ png("~/temp/nyfp-figs/trtuntrt_size_class_comp.png", width = 1200, height = 600,
 print(p)
 dev.off()
 
+# Calculate totals for TPA labels
+trees_sp_trtuntrt_tpa_totals = trees_sp_trtuntrt |>
+  group_by(year, trt_project) |>
+  summarize(total_tpa = sum(tpa_live_gt10cm, na.rm = TRUE), .groups = "drop")
+
 # TPA, with bars by species group (stacked), with elev_class as facets, using trees_sp_size
 p1 = ggplot(trees_sp_trtuntrt, aes(x = year, y = tpa_live_gt10cm, fill = species_group)) +
   geom_bar(stat = "identity", position = "stack") +
+  geom_text(data = trees_sp_trtuntrt_tpa_totals,
+            aes(x = year, y = total_tpa, label = round(total_tpa, 0), fill = NULL),
+            vjust = -0.5, size = 3) +
   scale_fill_viridis_d(option = "D", begin = 0, end = 1, direction = -1) +
   labs(
     title = "Live tree density", # (trees > 4\" DBH)
@@ -765,12 +781,17 @@ p1 = ggplot(trees_sp_trtuntrt, aes(x = year, y = tpa_live_gt10cm, fill = species
 # print(p1)
 # dev.off()
 
-
-# HAVE NOT YET ADAPTED THIS ONE TO THE PRE/POST TREATMENT SCENARIO
+# Calculate totals for BA labels
+trees_sp_trtuntrt_ba_totals = trees_sp_trtuntrt |>
+  group_by(year, trt_project) |>
+  summarize(total_ba = sum(ba_live_ft, na.rm = TRUE), .groups = "drop")
 
 # BA, with bars by species group (stacked), with elev_class as facets, using trees_sp_elev
 p2 = ggplot(trees_sp_trtuntrt, aes(x = year, y = ba_live_ft, fill = species_group)) +
   geom_bar(stat = "identity", position = "stack") +
+  geom_text(data = trees_sp_trtuntrt_ba_totals,
+            aes(x = year, y = total_ba, label = round(total_ba, 0), fill = NULL),
+            vjust = -0.5, size = 3) +
   scale_fill_viridis_d(option = "D", begin = 0, end = 1, direction = -1) +
   labs(title = "Live basal area",
        x = "",
