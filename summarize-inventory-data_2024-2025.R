@@ -49,6 +49,12 @@ plots = bind_rows(plots_24, plots_25)
 trees = bind_rows(trees_24, trees_25)
 fuels = bind_rows(fuels_24, fuels_25)
 
+# Get treatment project from plot ID (second item in item_item_item name)
+plots = plots |>
+  mutate(trt_project = str_split_fixed(plot_id, "_", 3)[,2])
+
+
+
 # Make plots spatial and extract elev
 
 names(plots)
@@ -92,7 +98,7 @@ plots = plots |>
 # Simplify to only plot_id and elev and sample (trt vs control) and treated_simp (for merging onto
 # summarized tree data))
 plot_type_elev = plots |>
-  select(year, plot_id, elev_m, elev_class, trt_ctl = Sample, treated_simp)
+  select(year, plot_id, elev_m, elev_class, trt_ctl = Sample, treated_simp, trt_project)
 # Add a flag for whether it was a revisited plot that in 2025 was treated. First get the plot IDs that
 # treated in 2025
 plot_ids_treated_2025 = plots |>
@@ -246,10 +252,10 @@ trees_sp_trtctl = trees_plt_sp |>
 
 
 # Get mean density across plots that were untreated in 2024 but treated in 2025 and sampled both
-# years, broken out by year/treated (which should be synonymous)
+# years, broken out by year/treated (which should be synonymous) and treatment project
 trees_sp_trtuntrt = trees_plt_sp |>
   filter(y2024_untrt_y2025_trt == TRUE) |>
-  group_by(species_group, year) |>
+  group_by(species_group, year, trt_project) |>
   summarize(
     n_live_gt10cm = mean(n_live_gt10cm, na.rm = TRUE),
     n_live_gt10in = mean(n_live_gt10in, na.rm = TRUE),
@@ -317,10 +323,10 @@ trees_sp_size_trtctl = trees_plt_sp_size |>
   ungroup()
 
 # Similar as above but  for plots that were untreated in 2024 but treated in 2025 and sampled both
-# years, and broken out by year/treated (which should be synonymous)
+# years, and broken out by year/treated (which should be synonymous) and treatment project
 trees_sp_size_y2024untrt_y2025trt = trees_plt_sp_size |>
   filter(plot_id %in% plots_ids_y2024_untrt_y2025_trt) |>
-  group_by(species_group, size_class, treated_simp, year) |>
+  group_by(species_group, size_class, treated_simp, year, trt_project) |>
   summarize(
     n_live_gt10cm = mean(n_live_gt10cm, na.rm = TRUE),
     n_live_gt10in = mean(n_live_gt10in, na.rm = TRUE),
@@ -736,7 +742,7 @@ p = ggplot(trees_sp_size_y2024untrt_y2025trt, aes(x = size_class, y = tpa_live_g
        x = "Size class (inches)",
        y = "TPA") +
   theme_bw() +
-  facet_wrap(~ year)
+  facet_grid(trt_project ~ year)
 p
 
 png("~/temp/nyfp-figs/trtuntrt_size_class_comp.png", width = 1200, height = 600, res = 150)
@@ -747,9 +753,12 @@ dev.off()
 p1 = ggplot(trees_sp_trtuntrt, aes(x = year, y = tpa_live_gt10cm, fill = species_group)) +
   geom_bar(stat = "identity", position = "stack") +
   scale_fill_viridis_d(option = "D", begin = 0, end = 1, direction = -1) +
-  labs(title = "Live tree density", # (trees > 4\" DBH)
-       x = "",
-       y = "TPA") +
+  labs(
+    title = "Live tree density", # (trees > 4\" DBH)
+    x = "",
+    y = "TPA"
+  ) +
+  facet_wrap(~ forcats::fct_rev(trt_project), ncol = 1) +
   theme_bw()
   
 # png("~/Documents/temp/nyfp-figs/trtctl_tpa_comp.png", width = 600, height = 600, res = 150)
@@ -766,6 +775,7 @@ p2 = ggplot(trees_sp_trtuntrt, aes(x = year, y = ba_live_ft, fill = species_grou
   labs(title = "Live basal area",
        x = "",
        y = "BA (sq ft/acre)") +
+  facet_wrap(~ forcats::fct_rev(trt_project), ncol = 1) +
   theme_bw()
 
 png("~/temp/nyfp-figs/trtctl_tph+ba_comp.png", width = 1000, height = 600, res = 150)
@@ -777,9 +787,11 @@ trees_plt_y2024untrt_y2025trt = trees_plt |>
   filter(y2024_untrt_y2025_trt == TRUE)
 
 # BA as violin plot, with boxplot overlay (no whiskers), by elev_class (not species)
-p1 = ggplot(trees_plt_y2024untrt_y2025trt, aes(x = year, y = ba_live_ft)) + 
+p1 = ggplot(trees_plt_y2024untrt_y2025trt, aes(x = year, y = ba_live_ft)) +
   geom_violin(fill = "lightblue", alpha = 0.5) +
   geom_boxplot(width = 0.1, outliers = FALSE, fill = "white", color = "black", coef = 0) +
+  geom_jitter(width = 0.1, height = 0, size = 1, alpha = 0.5) +
+  facet_grid(. ~ trt_project) +
   labs(title = "Live basal area",
        x = "",
        y = "BA (sq ft/acre)") +
@@ -793,6 +805,8 @@ p1 = ggplot(trees_plt_y2024untrt_y2025trt, aes(x = year, y = ba_live_ft)) +
 p2 = ggplot(trees_plt_y2024untrt_y2025trt, aes(x = year, y = tpa_live_gt10cm)) + 
   geom_violin(fill = "lightblue", alpha = 0.5) +
   geom_boxplot(width = 0.1, outliers = FALSE, fill = "white", color = "black", coef = 0) +
+  geom_jitter(width = 0.1, height = 0, size = 1, alpha = 0.5) +
+  facet_grid(. ~ trt_project) +
   labs(title = "Live tree density (trees > 4\" DBH)",
        x = "",
        y = "Trees per acre") +
@@ -808,6 +822,8 @@ p2 = ggplot(trees_plt_y2024untrt_y2025trt, aes(x = year, y = tpa_live_gt10cm)) +
 p3 = ggplot(trees_plt_y2024untrt_y2025trt, aes(x = year, y = ba_dead_ft)) + 
   geom_violin(fill = "lightblue", alpha = 0.5) +
   geom_boxplot(width = 0.1, outliers = FALSE, fill = "white", color = "black", coef = 0) +
+  geom_jitter(width = 0.1, height = 0, size = 1, alpha = 0.5) +
+  facet_grid(. ~ trt_project) +
   labs(title = "Snag basal area",
        x = "",
        y = "Snag BA (sq ft/acre)") +
@@ -822,6 +838,8 @@ p3 = ggplot(trees_plt_y2024untrt_y2025trt, aes(x = year, y = ba_dead_ft)) +
 p4 = ggplot(trees_plt_y2024untrt_y2025trt, aes(x = year, y = tpa_dead_gt10cm)) + 
   geom_violin(fill = "lightblue", alpha = 0.5) +
   geom_boxplot(width = 0.1, outliers = FALSE, fill = "white", color = "black", coef = 0) +
+  geom_jitter(width = 0.1, height = 0, size = 1, alpha = 0.5) +
+  facet_grid(. ~ trt_project) +
   labs(title = "Snag density (snags > 4\" DBH)",
        x = "",
        y = "Snags per acre") +
@@ -837,7 +855,7 @@ p4 = ggplot(trees_plt_y2024untrt_y2025trt, aes(x = year, y = tpa_dead_gt10cm)) +
 # Make the fuels df long-form
 d_fig = fuels_mass |>
   filter(y2024_untrt_y2025_trt == TRUE) |>
-  select(year, plot_id, elev_class, trt_ctl, mass_fine) |> #, mass_cwd
+  select(year, plot_id, elev_class, trt_ctl, mass_fine, trt_project) |> #, mass_cwd
   pivot_longer(cols = starts_with("mass_"),
                names_to = "fuel_class",
                values_to = "mass_tons_ac")
@@ -846,6 +864,8 @@ d_fig = fuels_mass |>
 p5 = ggplot(d_fig, aes(x = year, y = mass_tons_ac)) +
   geom_violin(fill = "lightblue", alpha = 0.5) +
   geom_boxplot(width = 0.1, outliers = FALSE, fill = "white", color = "black", coef = 0) +
+  geom_jitter(width = 0.1, height = 0, size = 1, alpha = 0.5) +
+  facet_grid(. ~ trt_project) +
   labs(title = "Fine fuel mass",
        x = "",
        y = "Mass (tons/acre)") +
