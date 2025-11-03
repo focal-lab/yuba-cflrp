@@ -49,6 +49,65 @@ plots = bind_rows(plots_24, plots_25)
 trees = bind_rows(trees_24, trees_25)
 fuels = bind_rows(fuels_24, fuels_25)
 
+# TR_TP_121 has two trees with tree_num 23. Set the second one to a placeholder tree_num (9000) and
+# keep it in the plot. It is a live CADE with DBH 15 cm.
+trees = trees |>
+  mutate(tree_num = ifelse(year == "2025" & plot_id == "TR_TP_121" & tree_num == 23 & dbh_cm == 15,
+                           9000,
+                           tree_num))
+
+
+# There are trees pasted from two 2024 plots TR_TP_R002. Different sets of trees. Plot the BA by
+# species for both of them, plus for the 2024 plots TR_TP_R002 to determine which they match. The
+# 2024 plot with more trees comes first, so we can rely on duplicated() to isolate the second plot.
+trees_foc = trees |>
+  filter(plot_id == "TR_TP_R002")
+
+duplicated = which(duplicated(trees_foc[,c("year","plot_id","tree_num")]))
+trees_foc$plot_year = ifelse(trees_foc$year == "2025", "2025", 
+                             ifelse(1:nrow(trees_foc) %in% duplicated, "2024b", "2024a"))
+
+# Summarize it for bar plot
+trees_foc_sum = trees_foc |>
+  group_by(plot_year, species_code) |>
+  summarize(ba = sum(pi * (dbh_cm / 20)^2)) |>
+  ungroup() |>
+  arrange(plot_year, -ba, species_code)
+
+# It is clear that the second 2024 plot is the one that matches the 2025 plot. What 2024 plot does
+# not have any trees recorded?
+
+plots_plot_2024 = unique(trees_24$plot_id)
+trees_plot_2024 = unique(trees_24$plot_id)
+setdiff(plots_plot_2024, trees_plot_2024)
+setdiff(trees_plot_2024, plots_plot_2024)
+# There are no 2024 plots missing tree data.
+
+# Check 2025
+plots_plot_2025 = unique(trees_25$plot_id)
+trees_plot_2025 = unique(trees_25$plot_id)
+setdiff(plots_plot_2025, trees_plot_2025)
+setdiff(trees_plot_2025, plots_plot_2025)
+# There are no 2025 plots missing tree data.
+
+# Simply remove the duplicate 2024 plot TR_TP_R002 tree survey. Remove the first instance of trees (the one
+# that is not labeled as duplicated). This works because the first instance has more trees, so only
+# (and all of) the trees in the second instance are marked as duplicated, while none in the first are.
+duplicated = duplicated(trees[, c("year", "plot_id", "tree_num")])
+trees = trees[!(!duplicated & ((trees$plot_id == "TR_TP_R002") & (trees$year == 2024))), ]
+
+# Remove the first instance of all the trees in the duplicated 2025 plot TR_TP_112
+duplicated = duplicated(trees[, c("year", "plot_id", "tree_num")])
+trees = trees[!(!duplicated & ((trees$plot_id == "TR_TP_112") & (trees$year == 2025))), ]
+
+
+
+# Confirm no dupliated trees
+dup_index = which(duplicated(trees[,c("year","plot_id","tree_num")]))
+length(dup_index)
+trees_dup = trees[dup_index, ]
+trees_dup
+
 # Get treatment project from plot ID (second item in item_item_item name)
 plots = plots |>
   mutate(trt_project = str_split_fixed(plot_id, "_", 3)[,2])
@@ -733,7 +792,7 @@ dev.off()
 
 
 
-## FACETED BY 2024/2025 (for plots that were measured in both years and were untreated in 2024 but treated in 2025):
+## FACETED BY 2024/2025 and trt_project (for plots that were measured in both years and were untreated in 2024 but treated in 2025):
 
 # Calculate totals for labels
 trees_sp_size_y2024untrt_y2025trt_totals = trees_sp_size_y2024untrt_y2025trt |>
@@ -753,7 +812,7 @@ p = ggplot(trees_sp_size_y2024untrt_y2025trt, aes(x = size_class, y = tpa_live_g
   facet_grid(trt_project ~ year)
 p
 
-png("~/temp/nyfp-figs/trtuntrt_size_class_comp.png", width = 1200, height = 600, res = 150)
+png("~/temp/nyfp-figs/trtuntrt_size_class_comp.png", width = 1200, height = 1200, res = 150)
 print(p)
 dev.off()
 
@@ -799,7 +858,7 @@ p2 = ggplot(trees_sp_trtuntrt, aes(x = year, y = ba_live_ft, fill = species_grou
   facet_wrap(~ forcats::fct_rev(trt_project), ncol = 1) +
   theme_bw()
 
-png("~/temp/nyfp-figs/trtctl_tph+ba_comp.png", width = 1000, height = 600, res = 150)
+png("~/temp/nyfp-figs/trtctl_tph+ba_comp.png", width = 1000, height = 1200, res = 150)
 (p1 | p2) + plot_layout(guides = "collect")
 dev.off()
 
