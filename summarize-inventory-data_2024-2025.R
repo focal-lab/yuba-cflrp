@@ -881,6 +881,24 @@ p1 = ggplot(trees_plt_y2024untrt_y2025trt, aes(x = year, y = ba_live_ft)) +
 # print(p1)
 # dev.off()
 
+# Second version: BA with connected lines for each plot
+p1_lines = ggplot(trees_plt_y2024untrt_y2025trt, aes(x = year, y = ba_live_ft)) +
+  geom_violin(fill = "lightblue", alpha = 0.5) +
+  geom_boxplot(width = 0.1, outliers = FALSE, fill = "white", color = "black", coef = 0) +
+  geom_line(aes(group = plot_id), alpha = 0.5) +
+  geom_point(size = 2) +
+  geom_text(data = trees_plt_y2024untrt_y2025trt |> filter(year == "2025"),
+            aes(label = plot_id), hjust = -0.1, size = 2.5) +
+  facet_grid(. ~ trt_project) +
+  labs(title = "Live basal area (individual plots)",
+       x = "",
+       y = "BA (sq ft/acre)") +
+  theme_bw()
+
+png("~/temp/nyfp-figs/trtctl_ba_live_lines.png", width = 1200, height = 600, res = 150)
+print(p1_lines)
+dev.off()
+
 # TPA as violin plot, with boxplot overlay (no whiskers), by elev_class (not species)
 p2 = ggplot(trees_plt_y2024untrt_y2025trt, aes(x = year, y = tpa_live_gt10cm)) + 
   geom_violin(fill = "lightblue", alpha = 0.5) +
