@@ -49,6 +49,11 @@ plots = bind_rows(plots_24, plots_25)
 trees = bind_rows(trees_24, trees_25)
 fuels = bind_rows(fuels_24, fuels_25)
 
+# TR_TP_103 in 2025 has a PSME with a dbh_cm of 168. In 2024, there was a PSME with dbh_cm of 16.8
+# that does not have a matching tree in 2025. Change the 2025 dbh to 16.8 to match.
+trees[trees$year == "2025" & trees$plot_id == "TR_TP_103" & trees$species_code == "PSME" & trees$dbh_cm == 168, "dbh_cm"] = 16.8
+
+
 # TR_TP_121 has two trees with tree_num 23. Set the second one to a placeholder tree_num (9000) and
 # keep it in the plot. It is a live CADE with DBH 15 cm.
 trees = trees |>
@@ -895,7 +900,7 @@ p1_lines = ggplot(trees_plt_y2024untrt_y2025trt, aes(x = year, y = ba_live_ft)) 
        y = "BA (sq ft/acre)") +
   theme_bw()
 
-png("~/temp/nyfp-figs/trtctl_ba_live_lines.png", width = 1200, height = 600, res = 150)
+png("~/temp/nyfp-figs/trtctl_ba_live_lines.png", width = 1200, height = 1000, res = 150)
 print(p1_lines)
 dev.off()
 
