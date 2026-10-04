@@ -72,7 +72,7 @@ duplicated = which(duplicated(trees_foc[,c("year","plot_id","tree_num")]))
 trees_foc$plot_year = ifelse(trees_foc$year == "2025", "2025", 
                              ifelse(1:nrow(trees_foc) %in% duplicated, "2024b", "2024a"))
 
-# Summarize it for bar plot
+# Summarize BA by species to determine which is the match to 2025
 trees_foc_sum = trees_foc |>
   group_by(plot_year, species_code) |>
   summarize(ba = sum(pi * (dbh_cm / 20)^2)) |>
@@ -418,8 +418,7 @@ fuels_agg = fuels |>
 
 
 
-#Determine slope correction factor by averaging slopes for all 4 transects, assuming NA (which is <20%) is 10%
-# Correction not needed because transect length was measured on the ground.
+# Slope correction not needed because transect length was measured on the ground.
 correction = 1
 
 #Brown's calculations (code borrowed from Derek Young)
@@ -452,7 +451,7 @@ fuels_mass = fuels_mass |>
 
 ### Figures
 
-# Size class distribution with species groups colored as stacked bars
+# 2024 Size class distribution with species groups colored as stacked bars
 
 p = ggplot(trees_sp_size, aes(x = size_class, y = tpa_live_gt10cm, fill = species_group)) +
   geom_bar(stat = "identity", position = "stack") +
@@ -469,7 +468,7 @@ dev.off()
 
 ## FACETED BY ELEVATION:
 
-# Same as above but broken out by elev_class
+# 2024 Size class distribution with species groups colored as stacked bars, faceted by elevation
 
 p = ggplot(trees_sp_size_elev, aes(x = size_class, y = tpa_live_gt10cm, fill = species_group)) +
   geom_bar(stat = "identity", position = "stack") +
@@ -484,7 +483,7 @@ png("~/Documents/temp/nyfp-figs/elev_size_class_comp.png", width = 1200, height 
 print(p)
 dev.off()
 
-# TPA, with bars by species group (stacked), with elev_class as facets, using trees_sp_size
+# 2024 TPA, with bars by species group (stacked), with elev_class as facets, using trees_sp_size
 p1 = ggplot(trees_sp_elev, aes(x = elev_class, y = tpa_live_gt10cm, fill = species_group)) +
   geom_bar(stat = "identity", position = "stack") +
   scale_fill_viridis_d(option = "D", begin = 0, end = 1, direction = -1) +
@@ -498,7 +497,7 @@ p1 = ggplot(trees_sp_elev, aes(x = elev_class, y = tpa_live_gt10cm, fill = speci
 # dev.off()
 
 
-# BA, with bars by species group (stacked), with elev_class as facets, using trees_sp_elev
+# 2024 BA, with bars by species group (stacked), with elev_class as facets, using trees_sp_elev
 p2 = ggplot(trees_sp_elev, aes(x = elev_class, y = ba_live_ft, fill = species_group)) + 
   geom_bar(stat = "identity", position = "stack") +
   scale_fill_viridis_d(option = "D", begin = 0, end = 1, direction = -1) +
@@ -632,7 +631,7 @@ dev.off()
 
 
 
-## FACETED BY CONTROL/TREATMENT:
+## 2024 FACETED BY CONTROL/TREATMENT:
 
 p = ggplot(trees_sp_size_trtctl, aes(x = size_class, y = tpa_live_gt10cm, fill = species_group)) +
   geom_bar(stat = "identity", position = "stack") +
